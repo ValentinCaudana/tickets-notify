@@ -1,0 +1,9 @@
+[
+  { "id": "fcb", "name": "FC Barcelona", "league": "laliga", "country": "ES",
+    "ticketing": { "membershipRequired": true,
+      "officialStore": "https://tickets.fcbarcelona.com",
+      "boxOffice": "Spotify Camp Nou (Temporal: Montjuïc)" } },
+  { "id": "rm", "name": "Real Madrid", "league": "laliga", "country": "ES",
+    "ticketing": { "membershipRequired": false,
+      "officialStore": "https://www.realmadrid.com/entradas" } }
+]
