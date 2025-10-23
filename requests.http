@@ -1,0 +1,15 @@
+### Ver ventas
+GET http://localhost:4000/api/sales
+
+### Crear una venta
+POST http://localhost:4000/api/sales
+Content-Type: application/json
+
+{
+  "clubId": "fcb",
+  "match": "FCB vs Girona (LaLiga)",
+  "onSaleAt": "2025-11-01T09:00:00Z",
+  "requiresMembership": true,
+  "link": "https://tickets.fcbarcelona.com"
+}
+

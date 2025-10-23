@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import { listSales, createSale } from '../controllers/sales.controller.js'
-const r = Router()
+const router = Router()
 
-r.get('/', listSales)         // GET /api/sales?clubId=fcb
-r.post('/', createSale)       // POST /api/sales
+router.get('/', listSales)
+router.post('/', createSale)
 
-export default r
+export default router

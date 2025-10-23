@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <!-- En dev: o QUITÁ CSP, o dejala permisiva -->
+    <!-- <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src 'self' http://localhost:4000; script-src 'self'; style-src 'self' 'unsafe-inline'"> -->
+    <title>Tickets Notify – Dev</title>
+  </head>
+  <body>
+    <h1>🎟️ Tickets Notify</h1>
+
+    <section>
+      <h2>Crear nueva venta</h2>
+      <form id="saleForm">
+        <input name="clubId" placeholder="Club ID (ej: fcb)" required />
+        <input name="match" placeholder="Partido (ej: FCB vs Girona)" required />
+        <input name="onSaleAt" type="datetime-local" required />
+        <label>
+          <input type="checkbox" name="requiresMembership" />
+          Requiere membresía
+        </label>
+        <input name="link" placeholder="Link oficial" required />
+        <button type="submit">Crear</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Próximas ventas</h2>
+      <ul id="sales"></ul>
+    </section>
+
+    <script>
+      async function loadSales() {
+        const res = await fetch("/api/sales");
+        const sales = await res.json();
+        const list = document.getElementById("sales");
+        list.innerHTML = sales
+          .map(
+            (s) => `
+            <li>
+              <b>${s.match}</b> — ${new Date(s.onSaleAt).toLocaleString()} 
+              ${s.requiresMembership ? "(Socio)" : ""}
+              <br><a href="${s.link}" target="_blank">${s.link}</a>
+            </li>
+          `
+          )
+          .join("");
+      }
+
+      document
+        .getElementById("saleForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const f = new FormData(e.target);
+          const payload = {
+            clubId: f.get("clubId"),
+            match: f.get("match"),
+            onSaleAt: new Date(f.get("onSaleAt")).toISOString(),
+            requiresMembership: f.get("requiresMembership") === "on",
+            link: f.get("link"),
+          };
+
+          await fetch("/api/sales", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          e.target.reset();
+          loadSales();
+        });
+
+      loadSales();
+    </script>
+  </body>
+</html>

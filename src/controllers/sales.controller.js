@@ -1,34 +1,34 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
-import sales from '../data/sales.json' assert { type: 'json' }
+import { promises as fs } from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const salesPath = path.join(__dirname, '../data/sales.json')
 
-// util simple para persistir JSON
-const saveJSON = async (file, data) =>
-  fs.writeFile(path.resolve('src/data', file), JSON.stringify(data, null, 2))
-
-export const listSales = (req, res) => {
-  const { clubId } = req.query
-  const rows = clubId ? sales.filter(s => s.clubId === clubId) : sales
-  res.json(rows)
+export async function listSales(_req, res) {
+  const raw = await fs.readFile(salesPath, 'utf8')
+  const sales = JSON.parse(raw)
+  // ordena por fecha de salida asc
+  sales.sort((a,b)=> new Date(a.onSaleAt) - new Date(b.onSaleAt))
+  res.json(sales)
 }
 
-export const createSale = async (req, res, next) => {
-  try {
-    const { clubId, match, onSaleAt, requiresMembership, link, boxOffice } = req.body
-    if (!clubId || !match || !onSaleAt) {
-      return res.status(400).json({ error: 'clubId, match, onSaleAt are required' })
-    }
-    const row = {
-      id: 'sale_' + Date.now(),
-      clubId, match,
-      onSaleAt, // ISO string
-      requiresMembership: !!requiresMembership,
-      link: link || null,
-      boxOffice: boxOffice || null, // dirección física si aplica
-      createdAt: new Date().toISOString()
-    }
-    sales.push(row)
-    await saveJSON('sales.json', sales)
-    res.status(201).json(row)
-  } catch (e) { next(e) }
+export async function createSale(req, res) {
+  const { clubId, match, onSaleAt, requiresMembership, link } = req.body
+  if (!clubId || !match || !onSaleAt || !link) {
+    return res.status(400).json({ error: 'clubId, match, onSaleAt y link son requeridos' })
+  }
+  const raw = await fs.readFile(salesPath, 'utf8')
+  const sales = JSON.parse(raw)
+  const sale = {
+    id: crypto.randomUUID(),
+    clubId,
+    match,
+    onSaleAt,               // ISO string: "2025-11-01T09:00:00Z"
+    requiresMembership: !!requiresMembership,
+    link
+  }
+  sales.push(sale)
+  await fs.writeFile(salesPath, JSON.stringify(sales, null, 2))
+  res.status(201).json(sale)
 }

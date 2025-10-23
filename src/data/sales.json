@@ -1,0 +1,26 @@
+[
+  {
+    "id": "61bc2bbc-ac40-439c-8af3-2c11a61618fc",
+    "clubId": "fcb",
+    "match": "FCB vs Girona (LaLiga)",
+    "onSaleAt": "2025-11-01T09:00:00Z",
+    "requiresMembership": true,
+    "link": "https://tickets.fcbarcelona.com"
+  },
+  {
+    "id": "99b8db23-090e-40b3-85d3-360b321e5fd4",
+    "clubId": "fcb",
+    "match": "FCB vs Girona (LaLiga)",
+    "onSaleAt": "2025-11-01T09:00:00Z",
+    "requiresMembership": true,
+    "link": "https://tickets.fcbarcelona.com"
+  },
+  {
+    "id": "28bf5652-e94f-421d-a308-4a76027e144d",
+    "clubId": "fcb",
+    "match": "FCB vs Girona (LaLiga)",
+    "onSaleAt": "2025-11-01T09:00:00Z",
+    "requiresMembership": true,
+    "link": "https://tickets.fcbarcelona.com"
+  }
+]
