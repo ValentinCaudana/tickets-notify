@@ -1,8 +1,10 @@
-import { Router } from 'express'
-import { listSales, createSale } from '../controllers/sales.controller.js'
-const router = Router()
+import { Router } from 'express';
+import { listSales, createSale } from '../controllers/sales.controller.js';
+import { validate } from '../middlewares/validate.js';
+import { saleSchema } from '../validators/sale.schema.js';
 
-router.get('/', listSales)
-router.post('/', createSale)
+export const salesRoutes = Router();
 
-export default router
+salesRoutes.get('/', listSales);
+salesRoutes.post('/', validate(saleSchema), createSale);
+

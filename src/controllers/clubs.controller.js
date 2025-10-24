@@ -1,13 +1,17 @@
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import clubs from '../data/clubs.json' assert { type: 'json' };
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+export const getClubGuide = (req, res) => {
+  const club = clubs.find(c => c.id === req.params.id);
+  if (!club) return res.status(404).json({ error: 'Club not found' });
+  res.json({
+    id: club.id,
+    name: club.name,
+    officialStore: club.officialStore,
+    requiresMembership: club.requiresMembership,
+    boxOffice: club.boxOffice ?? null,
+    howToBuy: club.howToBuy ?? []
+  });
+};
 
-const clubsPath = path.join(__dirname, '../data/clubs.json')
-const clubs = JSON.parse(fs.readFileSync(clubsPath, 'utf8'))
 
-export const listClubs = (_req, res) => {
-  res.json(clubs)
-}
+

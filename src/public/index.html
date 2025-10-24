@@ -1,75 +1,98 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <meta charset="utf-8">
-    <!-- En dev: o QUITÁ CSP, o dejala permisiva -->
-    <!-- <meta http-equiv="Content-Security-Policy"
-      content="default-src 'self'; connect-src 'self' http://localhost:4000; script-src 'self'; style-src 'self' 'unsafe-inline'"> -->
-    <title>Tickets Notify – Dev</title>
+    <meta charset="UTF-8" />
+    <title>Tickets Notify</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+      form { display: grid; gap: .75rem; margin-bottom: 2rem; grid-template-columns: 1fr 1fr; }
+      form label { font-size: .9rem; color: #444; }
+      form input[type="text"], form input[type="url"], form input[type="datetime-local"] { padding: .5rem; }
+      form .row { grid-column: 1/-1; display: flex; gap: 1rem; align-items: center; }
+      button { padding: .6rem 1rem; cursor: pointer; }
+      ul { padding: 0; list-style: none; display: grid; gap: 1rem; }
+      li { padding: 1rem; border: 1px solid #e5e7eb; border-radius: .5rem; }
+      .meta { color:#555; font-size: .9rem; }
+    </style>
   </head>
   <body>
     <h1>🎟️ Tickets Notify</h1>
 
     <section>
-      <h2>Crear nueva venta</h2>
-      <form id="saleForm">
-        <input name="clubId" placeholder="Club ID (ej: fcb)" required />
-        <input name="match" placeholder="Partido (ej: FCB vs Girona)" required />
-        <input name="onSaleAt" type="datetime-local" required />
-        <label>
-          <input type="checkbox" name="requiresMembership" />
-          Requiere membresía
-        </label>
-        <input name="link" placeholder="Link oficial" required />
-        <button type="submit">Crear</button>
+      <h2>Create a new sale</h2>
+      <form id="saleForm" autocomplete="off">
+        <div>
+          <label for="clubId">Club ID</label>
+          <input id="clubId" name="clubId" placeholder="e.g. fcb" required />
+        </div>
+
+        <div>
+          <label for="match">Match</label>
+          <input id="match" name="match" placeholder="e.g. FCB vs Girona (LaLiga)" required />
+        </div>
+
+        <div>
+          <label for="onSaleAt">On sale at</label>
+          <input id="onSaleAt" name="onSaleAt" type="datetime-local" required />
+        </div>
+
+        <div class="row">
+          <label><input type="checkbox" id="requiresMembership" name="requiresMembership" /> Membership required</label>
+        </div>
+
+        <div class="row">
+          <label for="link" style="flex:1">Official link</label>
+          <input id="link" name="link" type="url" placeholder="https://tickets.example.com" style="flex:3" required />
+          <button type="submit">Create</button>
+        </div>
       </form>
     </section>
 
     <section>
-      <h2>Próximas ventas</h2>
+      <h2>Upcoming sales</h2>
       <ul id="sales"></ul>
     </section>
 
     <script>
+      const fmt = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+
       async function loadSales() {
-        const res = await fetch("/api/sales");
+        const res = await fetch('/api/sales');
         const sales = await res.json();
-        const list = document.getElementById("sales");
-        list.innerHTML = sales
-          .map(
-            (s) => `
-            <li>
-              <b>${s.match}</b> — ${new Date(s.onSaleAt).toLocaleString()} 
-              ${s.requiresMembership ? "(Socio)" : ""}
-              <br><a href="${s.link}" target="_blank">${s.link}</a>
-            </li>
-          `
-          )
-          .join("");
+        const list = document.getElementById('sales');
+        if (!Array.isArray(sales) || sales.length === 0) {
+          list.innerHTML = `<li class="meta">No sales yet. Create the first one above.</li>`;
+          return;
+        }
+        list.innerHTML = sales.map(s => `
+          <li>
+            <div><strong>${s.match}</strong> — <span class="meta">${fmt.format(new Date(s.onSaleAt))}</span></div>
+            <div class="meta">${s.requiresMembership ? 'Membership required' : 'No membership required'}</div>
+            <div><a href="${s.link}" target="_blank" rel="noopener">Open official link</a></div>
+          </li>
+        `).join('');
       }
 
-      document
-        .getElementById("saleForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const f = new FormData(e.target);
-          const payload = {
-            clubId: f.get("clubId"),
-            match: f.get("match"),
-            onSaleAt: new Date(f.get("onSaleAt")).toISOString(),
-            requiresMembership: f.get("requiresMembership") === "on",
-            link: f.get("link"),
-          };
-
-          await fetch("/api/sales", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-
-          e.target.reset();
-          loadSales();
+      document.getElementById('saleForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        const payload = {
+          clubId: f.get('clubId'),
+          match: f.get('match'),
+          onSaleAt: new Date(f.get('onSaleAt')).toISOString(),
+          requiresMembership: f.get('requiresMembership') === 'on',
+          link: f.get('link'),
+        };
+        const res = await fetch('/api/sales', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
         });
+        if (!res.ok) alert('Failed to create sale');
+        e.target.reset();
+        loadSales();
+      });
 
       loadSales();
     </script>

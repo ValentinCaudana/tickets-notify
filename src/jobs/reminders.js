@@ -23,3 +23,20 @@ export function startReminderJob() {
     }
   }, 60 * 1000)
 }
+
+import sales from '../data/sales.json' with { type: 'json' };
+
+const ONE_MIN = 60_000;
+const AHEAD_MS = 60 * 60 * 1000; // 1 hora
+
+export function startReminders({ notify = console.log } = {}) {
+  setInterval(() => {
+    const now = Date.now();
+    for (const s of sales) {
+      const ts = new Date(s.onSaleAt).getTime();
+      if (ts - now <= AHEAD_MS && ts - now > AHEAD_MS - ONE_MIN) {
+        notify(`🔔 ${s.match} of ${s.clubId} goes on sale in ~1 hour: ${s.link}`);
+      }
+    }
+  }, ONE_MIN);
+}

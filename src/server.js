@@ -1,28 +1,21 @@
-import express from 'express'
-import salesRoutes from './routes/sales.routes.js'
+import express from 'express';
+import cors from 'cors';
+import { salesRoutes } from './routes/sales.routes.js';
+import { clubsRoutes } from './routes/clubs.routes.js'; // si lo tienes
 
-const app = express()
-app.use(express.json())
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
 
-app.use('/api/sales', salesRoutes)
-app.get('/health', (_req, res) => res.json({ ok: true }))
-app.listen(process.env.PORT ?? 4000, ()=> console.log('API on 4000'))
+app.get('/health', (_req, res) => res.json({ ok: true }));
 
-// Ruta de verificación directa (sin router, para aislar)
-import { listClubs } from './controllers/clubs.controller.js'
-app.get('/api/clubs', listClubs)
+app.use('/api/sales', salesRoutes);
+app.use('/api/clubs', clubsRoutes); // opcional
 
-const PORT = process.env.PORT || 4000
-app.listen(PORT, () => console.log(`API listening on http://localhost:${PORT}`))
+app.listen(process.env.PORT || 4000, () => {
+  console.log('API on 4000');
+});
 
-
-import path from 'path'
-import { fileURLToPath } from 'url'
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-app.use(express.static(path.join(__dirname, 'public')))
-
-
-import { startReminderJob } from './jobs/reminders.js'
-startReminderJob()
+import { startReminders } from './jobs/reminders.js';
+startReminders();
