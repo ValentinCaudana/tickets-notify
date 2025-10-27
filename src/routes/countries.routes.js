@@ -1,7 +1,8 @@
-import { Router } from 'express'
-import { listCountries } from '../controllers/countries.controller.js'
-const r = Router()
 
-r.get('/', listCountries) // GET /api/countries
+import { Router } from 'express';
+import { listCountries } from '../controllers/countries.controller.js';
 
-export default r
+const countriesRoutes = Router();
+countriesRoutes.get('/', listCountries);
+
+export default countriesRoutes;

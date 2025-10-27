@@ -1,7 +1,9 @@
-import { Router } from 'express'
-import { listClubs, getClub } from '../controllers/clubs.controller.js'
 
-export const clubsRoutes = Router()
+import { Router } from 'express';
+import { listClubs } from '../controllers/clubs.controller.js';
 
-clubsRoutes.get('/', listClubs)
-clubsRoutes.get('/:id', getClub)
+const clubsRoutes = Router();
+clubsRoutes.get('/', listClubs);
+
+export default clubsRoutes;
+

@@ -1,17 +1,38 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
-import subs from '../data/subscriptions.json' assert { type: 'json' }
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const saveJSON = async (file, data) =>
-  fs.writeFile(path.resolve('src/data', file), JSON.stringify(data, null, 2))
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const subsPath = path.join(__dirname, '../data/subscriptions.json')
 
-export const subscribeClub = async (req, res, next) => {
+function safeReadFileSync(path) {
+  if (!fs.existsSync(path)) return []
+  const data = fs.readFileSync(path, 'utf8')
+  if (!data.trim()) return [] // si el archivo está vacío
   try {
-    const { email, clubId } = req.body
-    if (!email || !clubId) return res.status(400).json({ error: 'email and clubId required' })
-    const sub = { id: 'sub_' + Date.now(), email, clubId, createdAt: new Date().toISOString() }
-    subs.push(sub)
-    await saveJSON('subscriptions.json', subs)
-    res.status(201).json(sub)
-  } catch (e) { next(e) }
+    return JSON.parse(data)
+  } catch {
+    return [] // si el contenido no es JSON válido
+  }
+}
+
+export function listSubscriptions(_req, res) {
+  const subs = safeReadFileSync(subsPath)
+  res.json(subs)
+}
+
+export function createSubscription(req, res) {
+  const { email, clubId } = req.body
+
+  if (!email || !clubId) {
+    return res.status(400).json({ error: 'email and clubId are required' })
+  }
+
+  const subs = safeReadFileSync(subsPath)
+  const sub = { id: crypto.randomUUID(), email, clubId }
+  subs.push(sub)
+
+  fs.writeFileSync(subsPath, JSON.stringify(subs, null, 2))
+  res.status(201).json(sub)
 }

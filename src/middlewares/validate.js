@@ -1,11 +1,11 @@
-export const validate = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.body);
-  if (!result.success) {
-    return res.status(400).json({
-      error: 'Invalid data',
-      details: result.error.issues.map(i => ({ path: i.path, message: i.message })),
-    });
-  }
-  req.body = result.data;
-  next();
-};
+
+export default function validate(schema) {
+  return (req, res, next) => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.issues });
+    }
+    req.body = result.data; // ya saneado
+    next();
+  };
+}

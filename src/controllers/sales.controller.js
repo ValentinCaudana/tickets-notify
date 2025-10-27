@@ -1,51 +1,36 @@
 // src/controllers/sales.controller.js
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-// importa los datos
-import clubs from '../data/clubs.json' with { type: 'json' }; // o carga con fs si prefieres
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
-const salesPath  = path.join(__dirname, '../data/sales.json');
+const __dirname = path.dirname(__filename);
 
-// cache de ventas en memoria
-let sales = [];
-try {
-  sales = JSON.parse(await fs.readFile(salesPath, 'utf8'));
-} catch {
-  sales = [];
+const clubsPath = path.join(__dirname, '../data/clubs.json');
+const salesPath = path.join(__dirname, '../data/sales.json');
+
+const byId = new Map(JSON.parse(fs.readFileSync(clubsPath, 'utf8')).map(c => [c.id, c]));
+const sameHost = (a, b) => new URL(a).host === new URL(b).host;
+
+export async function listSales(_req, res) {
+  const exists = fs.existsSync(salesPath);
+  const sales = exists ? JSON.parse(fs.readFileSync(salesPath, 'utf8')) : [];
+  res.json(sales);
 }
-
-// utilidades para validar
-const byId = new Map(clubs.map(c => [c.id, c]));
-const sameHost = (a, b) => {
-  try {
-    return new URL(a).host === new URL(b).host;
-  } catch {
-    return false;
-  }
-};
 
 export async function createSale(req, res) {
   const { clubId, match, onSaleAt, requiresMembership, link } = req.body;
 
-  // 1) validar club
   const club = byId.get(clubId);
-  if (!club) {
-    return res.status(400).json({ error: 'Club not found' });
-  }
+  if (!club) return res.status(400).json({ error: 'Club not found' });
 
-  // 2) validar que el link apunte al mismo host que la tienda oficial
   if (!sameHost(link, club.officialStore)) {
-    return res.status(400).json({
-      error: 'Link must point to the official store domain',
-      officialStore: club.officialStore
-    });
+    return res.status(400).json({ error: 'link must point to the official store' });
   }
 
-  // 3) crear y persistir
+  const exists = fs.existsSync(salesPath);
+  const sales = exists ? JSON.parse(fs.readFileSync(salesPath, 'utf8')) : [];
+
   const sale = {
     id: crypto.randomUUID(),
     clubId,
@@ -56,12 +41,6 @@ export async function createSale(req, res) {
   };
 
   sales.push(sale);
-  await fs.writeFile(salesPath, JSON.stringify(sales, null, 2));
-
-  // 4) responder
-  return res.status(201).json(sale);
-}
-
-export function listSales(_req, res) {
-  res.json(sales);
+  fs.writeFileSync(salesPath, JSON.stringify(sales, null, 2));
+  res.status(201).json(sale);
 }

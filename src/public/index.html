@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Tickets Notify</title>
+            
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
@@ -18,7 +19,42 @@
   </head>
   <body>
     <h1>🎟️ Tickets Notify</h1>
+        <h2>Current sales</h2>
+<pre id="sales-output">Loading...</pre>
 
+<h2>Subscribe for updates</h2>
+<form id="subscribe-form">
+  <input type="email" id="email" placeholder="Your email" required />
+  <input type="text" id="clubId" placeholder="Club ID (e.g. fcb)" required />
+  <button type="submit">Subscribe</button>
+</form>
+
+<p id="sub-result"></p>
+
+<script>
+  async function loadSales() {
+    const res = await fetch('/api/sales');
+    const data = await res.json();
+    document.getElementById('sales-output').textContent = JSON.stringify(data, null, 2);
+  }
+
+  document.getElementById('subscribe-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const clubId = document.getElementById('clubId').value;
+
+    const res = await fetch('/api/subscriptions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, clubId })
+    });
+
+    const result = await res.json();
+    document.getElementById('sub-result').textContent = JSON.stringify(result, null, 2);
+  });
+
+  loadSales();
+</script>
     <section>
       <h2>Create a new sale</h2>
       <form id="saleForm" autocomplete="off">

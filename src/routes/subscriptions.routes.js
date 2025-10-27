@@ -1,6 +1,9 @@
-import { Router } from 'express'
-import { subscribeClub } from '../controllers/subscriptions.controller.js'
-const r = Router()
+import { Router } from 'express';
+import { listSubscriptions, createSubscription } from '../controllers/subscriptions.controller.js';
 
-r.post('/', subscribeClub) // { email or pushEndpoint, clubId }
-export default r
+const subscriptionsRoutes = Router();
+
+subscriptionsRoutes.get('/', listSubscriptions);
+subscriptionsRoutes.post('/', createSubscription);
+
+export default subscriptionsRoutes;

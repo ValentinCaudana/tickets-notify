@@ -1,17 +1,14 @@
-import clubs from '../data/clubs.json' assert { type: 'json' };
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-export const getClubGuide = (req, res) => {
-  const club = clubs.find(c => c.id === req.params.id);
-  if (!club) return res.status(404).json({ error: 'Club not found' });
-  res.json({
-    id: club.id,
-    name: club.name,
-    officialStore: club.officialStore,
-    requiresMembership: club.requiresMembership,
-    boxOffice: club.boxOffice ?? null,
-    howToBuy: club.howToBuy ?? []
-  });
-};
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clubsPath = path.join(__dirname, '../data/clubs.json');
 
+export function listClubs(_req, res) {
+  const clubs = JSON.parse(fs.readFileSync(clubsPath, 'utf8'));
+  res.json(clubs);
+}
 
 
