@@ -1,26 +1,8 @@
 [
-  {
-    "id": "61bc2bbc-ac40-439c-8af3-2c11a61618fc",
-    "clubId": "fcb",
-    "match": "FCB vs Girona (LaLiga)",
-    "onSaleAt": "2025-11-01T09:00:00Z",
-    "requiresMembership": true,
-    "link": "https://tickets.fcbarcelona.com"
-  },
-  {
-    "id": "99b8db23-090e-40b3-85d3-360b321e5fd4",
-    "clubId": "fcb",
-    "match": "FCB vs Girona (LaLiga)",
-    "onSaleAt": "2025-11-01T09:00:00Z",
-    "requiresMembership": true,
-    "link": "https://tickets.fcbarcelona.com"
-  },
-  {
-    "id": "28bf5652-e94f-421d-a308-4a76027e144d",
-    "clubId": "fcb",
-    "match": "FCB vs Girona (LaLiga)",
-    "onSaleAt": "2025-11-01T09:00:00Z",
-    "requiresMembership": true,
-    "link": "https://tickets.fcbarcelona.com"
-  }
+  { "id": "e1", "clubId": "fcb", "match": "FCB vs Girona (LaLiga)", "onSaleAt": "2025-11-01T09:00:00Z", "requiresMembership": true, "link": "https://tickets.fcbarcelona.com/" },
+  { "id": "e2", "clubId": "rm",  "match": "Real Madrid vs Sevilla (LaLiga)", "onSaleAt": "2025-11-02T10:00:00Z", "requiresMembership": false, "link": "https://www.realmadrid.com/entradas" },
+  { "id": "e3", "clubId": "mci", "match": "Man City vs Arsenal (Premier)", "onSaleAt": "2025-11-05T10:00:00Z", "requiresMembership": false, "link": "https://www.mancity.com/tickets" },
+
+  { "id": "a1", "clubId": "rvr", "match": "River vs Boca (LPF)", "onSaleAt": "2025-11-03T12:00:00Z", "requiresMembership": true, "link": "https://riverid.tuentrada.com/" },
+  { "id": "a2", "clubId": "boc", "match": "Boca vs Racing (LPF)", "onSaleAt": "2025-11-04T12:00:00Z", "requiresMembership": true, "link": "https://www.bocajuniors.com.ar" }
 ]

@@ -1,136 +1,303 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Tickets Notify</title>
-            
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
-      form { display: grid; gap: .75rem; margin-bottom: 2rem; grid-template-columns: 1fr 1fr; }
-      form label { font-size: .9rem; color: #444; }
-      form input[type="text"], form input[type="url"], form input[type="datetime-local"] { padding: .5rem; }
-      form .row { grid-column: 1/-1; display: flex; gap: 1rem; align-items: center; }
-      button { padding: .6rem 1rem; cursor: pointer; }
-      ul { padding: 0; list-style: none; display: grid; gap: 1rem; }
-      li { padding: 1rem; border: 1px solid #e5e7eb; border-radius: .5rem; }
-      .meta { color:#555; font-size: .9rem; }
-    </style>
-  </head>
-  <body>
-    <h1>🎟️ Tickets Notify</h1>
-        <h2>Current sales</h2>
-<pre id="sales-output">Loading...</pre>
 
-<h2>Subscribe for updates</h2>
-<form id="subscribe-form">
-  <input type="email" id="email" placeholder="Your email" required />
-  <input type="text" id="clubId" placeholder="Club ID (e.g. fcb)" required />
-  <button type="submit">Subscribe</button>
-</form>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Tickets Notify</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --card: #121821;
+      --text: #e5eef7;
+      --muted: #9db0c6;
+      --ok: #2ecc71;
+      --warn: #f1c40f;
+      --err: #e74c3c;
+      --brand: #4ea1ff;
+    }
 
-<p id="sub-result"></p>
+    * {
+      box-sizing: border-box
+    }
 
-<script>
-  async function loadSales() {
-    const res = await fetch('/api/sales');
-    const data = await res.json();
-    document.getElementById('sales-output').textContent = JSON.stringify(data, null, 2);
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px
+    }
+
+    header .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--brand)
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 0
+    }
+
+    section {
+      margin: 28px 0
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 16px
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid #1e2632;
+      border-radius: 14px;
+      padding: 16px
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #1e2632;
+      color: var(--muted);
+      margin-left: 4px
+    }
+
+    .badge--membership {
+      background: #1a2b1a;
+      color: #b9f6ca
+    }
+
+    .title {
+      font-weight: 600;
+      margin-bottom: 6px
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    .row {
+      display: flex;
+      gap: 10px
+    }
+
+    input,
+    button {
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid #223045;
+      background: #0f141c;
+      color: var(--text);
+      padding: 0 12px
+    }
+
+    input::placeholder {
+      color: #7e93ad
+    }
+
+    button {
+      background: var(--brand);
+      border-color: transparent;
+      font-weight: 600;
+      cursor: pointer
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed
+    }
+
+    .form {
+      display: grid;
+      grid-template-columns: 1.3fr 1.3fr .8fr;
+      gap: 10px
+    }
+
+    .form--create {
+      grid-template-columns: 1fr 1fr 1fr 1fr .8fr
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0f141c;
+      border: 1px solid #223045;
+      border-radius: 10px;
+      padding: 14px
+    }
+
+    .msg {
+      margin-top: 10px;
+      font-size: 14px
+    }
+
+    .msg.ok {
+      color: var(--ok)
+    }
+
+    .msg.err {
+      color: var(--err)
+    }
+
+    a.btn {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #223045;
+      background: #0f141c;
+      color: var(--text);
+      text-decoration: none
+    }
+    .field { display:flex; flex-direction:column; gap:4px; }
+    .err { color:#b00020; min-height:1em; }
+    .is-invalid { border:1px solid #b00020 !important; outline: none; }
+    .toast {
+      position: fixed; right: 16px; bottom: 16px; z-index: 9999; 
+      max-width: 320px; padding: 10px 12px; border-radius: 8px;
+      color: #fff; background: rgba(20,20,20,.9); display:none;
+    }
+    .toast.ok { background: #2e7d32; }
+    .toast.err { background: #c62828; }
+    .cal-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.4);
+    display:flex; align-items:center; justify-content:center; z-index:9998;
   }
+  .cal-dialog{
+    background:#15171a; color:#fff; border-radius:10px; width:min(520px,92vw);
+    box-shadow:0 10px 40px rgba(0,0,0,.5); overflow:hidden;
+  }
+  .cal-header{ display:flex; justify-content:space-between; align-items:center;
+    padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .cal-header button{ background:#2b2f36; color:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; }
+  .cal-body{ max-height:60vh; overflow:auto; padding:10px; }
+  .cal-row{
+    width:100%; display:flex; justify-content:space-between; align-items:center;
+    padding:10px 12px; margin:6px 0; border-radius:8px; border:1px solid rgba(255,255,255,.08);
+    background:#1a1d22; color:#eee; cursor:pointer;
+  }
+  .cal-row:hover{ background:#21262d; }
+  </style>
+</head>
+<div id="toast" class="toast"></div>
 
-  document.getElementById('subscribe-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const clubId = document.getElementById('clubId').value;
+<div id="calendar-modal" class="cal-backdrop" style="display:none">
+  <div class="cal-dialog">
+    <div class="cal-header">
+      <strong>Sales calendar</strong>
+      <button id="calendar-close" type="button" aria-label="Close">✕</button>
+    </div>
+    <div id="calendar-body" class="cal-body"></div>
+  </div>
+</div>
 
-    const res = await fetch('/api/subscriptions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, clubId })
-    });
+<body>
+  <div class="container">
+    <header>
+      <div class="dot"></div>
+      <h1>Tickets Notify</h1>
+    </header>
 
-    const result = await res.json();
-    document.getElementById('sub-result').textContent = JSON.stringify(result, null, 2);
-  });
-
-  loadSales();
-</script>
     <section>
-      <h2>Create a new sale</h2>
-      <form id="saleForm" autocomplete="off">
-        <div>
-          <label for="clubId">Club ID</label>
-          <input id="clubId" name="clubId" placeholder="e.g. fcb" required />
+      <h2 style="margin:0 0 10px 0">Current sales</h2>
+      <div id="filters" class="card" style="margin-bottom:12px">
+        <div class="row" style="flex-wrap:wrap; gap:10px">
+          <input id="flt-search" type="text" placeholder="Search match or club…" style="flex:1 1 220px" />
+          <select id="flt-league" style="flex:1 1 160px">
+            <option value="">All leagues</option>
+          </select>
+          <select id="flt-country" style="flex:1 1 140px">
+            <option value="">All countries</option>
+          </select>
+          <select id="flt-region" style="flex:1 1 160px">
+            <option value="">All regions</option>
+            <option value="europe">Europe</option>
+            <option value="argentina">Argentina</option>
+          </select>
+          <label class="muted" style="display:flex;align-items:center;gap:6px">
+            <input id="flt-membership" type="checkbox" /> Membership only
+          </label>
+          <input id="flt-date" type="date" style="flex:1 1 160px" />
+          <button id="btn-calendar" type="button">Open calendar</button>
+          <select id="flt-sort" style="flex:1 1 160px">
+            <option value="soon">Sort: Soonest first</option>
+            <option value="latest">Sort: Latest first</option>
+          </select>
         </div>
+      </div>
+      <div id="sales-list" class="grid" aria-live="polite"></div>
+      
+    </section>
 
-        <div>
-          <label for="match">Match</label>
-          <input id="match" name="match" placeholder="e.g. FCB vs Girona (LaLiga)" required />
-        </div>
-
-        <div>
-          <label for="onSaleAt">On sale at</label>
-          <input id="onSaleAt" name="onSaleAt" type="datetime-local" required />
-        </div>
-
-        <div class="row">
-          <label><input type="checkbox" id="requiresMembership" name="requiresMembership" /> Membership required</label>
-        </div>
-
-        <div class="row">
-          <label for="link" style="flex:1">Official link</label>
-          <input id="link" name="link" type="url" placeholder="https://tickets.example.com" style="flex:3" required />
-          <button type="submit">Create</button>
-        </div>
+    <section>
+      <h3 style="margin:0 0 10px 0">Subscribe for updates</h3>
+      <form id="subscribe-form" class="form" novalidate>
+        <input id="sub-email" type="email" placeholder="Your email" required />
+        <input id="sub-club" type="text" placeholder="Club ID (e.g. fcb)" />
+        <button id="sub-btn" type="submit">Subscribe</button>
       </form>
+      <div id="sub-msg" class="msg"></div>
     </section>
 
     <section>
-      <h2>Upcoming sales</h2>
-      <ul id="sales"></ul>
+      <h3 style="margin:0 0 10px 0">Create a new sale</h3>
+      <form id="create-form" class="form form--create" novalidate>
+        <div class="field">
+          <input id="sale-club" list="clubs-list" type="text" placeholder="Club ID (e.g. fcb)" required />
+          <datalist id="clubs-list"></datalist>
+          <small id="err-club" class="err"></small>
+        </div>
+      
+        <div class="field">
+          <input id="sale-match" type="text" placeholder="Match (e.g. FCB vs Girona)" required />
+          <small id="err-match" class="err"></small>
+        </div>
+      
+        <div class="field">
+          <input id="sale-date" type="datetime-local" placeholder="On sale at" required />
+          <small id="err-date" class="err"></small>
+        </div>
+      
+        <div class="field">
+          <input id="sale-link" type="url" placeholder="Official ticket link" required />
+          <small id="err-link" class="err"></small>
+        </div>
+      
+        <label class="muted" style="display:flex;align-items:center;gap:6px;margin-top:2px">
+          <input id="sale-membership" type="checkbox" checked />
+          Requires membership
+        </label>
+      
+        <button id="create-btn" type="submit">Create</button>
+      </form>
+      
+      <div id="create-msg" class="msg"></div>
+      <div id="create-msg" class="msg"></div> 
+      <div class="muted" style="margin-top:6px">Note: set the correct local time for “On sale at”.</div>
+      <div id="create-msg" class="msg"></div>
     </section>
+  </div>
 
-    <script>
-      const fmt = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  <script src="/app.js" type="module"></script>
+</body>
 
-      async function loadSales() {
-        const res = await fetch('/api/sales');
-        const sales = await res.json();
-        const list = document.getElementById('sales');
-        if (!Array.isArray(sales) || sales.length === 0) {
-          list.innerHTML = `<li class="meta">No sales yet. Create the first one above.</li>`;
-          return;
-        }
-        list.innerHTML = sales.map(s => `
-          <li>
-            <div><strong>${s.match}</strong> — <span class="meta">${fmt.format(new Date(s.onSaleAt))}</span></div>
-            <div class="meta">${s.requiresMembership ? 'Membership required' : 'No membership required'}</div>
-            <div><a href="${s.link}" target="_blank" rel="noopener">Open official link</a></div>
-          </li>
-        `).join('');
-      }
-
-      document.getElementById('saleForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const f = new FormData(e.target);
-        const payload = {
-          clubId: f.get('clubId'),
-          match: f.get('match'),
-          onSaleAt: new Date(f.get('onSaleAt')).toISOString(),
-          requiresMembership: f.get('requiresMembership') === 'on',
-          link: f.get('link'),
-        };
-        const res = await fetch('/api/sales', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) alert('Failed to create sale');
-        e.target.reset();
-        loadSales();
-      });
-
-      loadSales();
-    </script>
-  </body>
 </html>

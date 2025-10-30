@@ -1,18 +1,16 @@
 [
-  {
-    "id": "fcb",
-    "name": "FC Barcelona",
-    "league": "laliga",
-    "country": "es",
-    "officialStore": "https://tickets.fcbarcelona.com",
-    "boxOffice": "Spotify Camp Nou (Temporal: Montjuïc)",
-    "howToBuy": [
-      "Crear cuenta en la web oficial",
-      "Si piden socio: vincular número de socio",
-      "El día/hora de venta, entrar al link oficial",
-      "Elegir sector, confirmar condiciones y pagar"
-    ],
-    "requiresMembership": true
-  }
-]
+  { "id": "fcb", "name": "FC Barcelona", "league": "laliga", "country": "es", "officialStore": "https://tickets.fcbarcelona.com/" },
+  { "id": "rm",  "name": "Real Madrid",  "league": "laliga", "country": "es", "officialStore": "https://www.realmadrid.com/entradas" },
+  { "id": "atm", "name": "Atlético de Madrid", "league": "laliga", "country": "es", "officialStore": "https://www.atleticodemadrid.com/entradas" },
 
+  { "id": "mci", "name": "Manchester City", "league": "premier", "country": "gb", "officialStore": "https://www.mancity.com/tickets" },
+  { "id": "liv", "name": "Liverpool", "league": "premier", "country": "gb", "officialStore": "https://www.liverpoolfc.com/tickets" },
+
+  { "id": "psg", "name": "Paris Saint-Germain", "league": "ligue1", "country": "fr", "officialStore": "https://www.psg.fr/billetterie" },
+  { "id": "bvb", "name": "Borussia Dortmund", "league": "bundesliga", "country": "de", "officialStore": "https://www.bvb.de/Tickets/Ticket-Infos" },
+  { "id": "juv", "name": "Juventus", "league": "seriea", "country": "it", "officialStore": "https://www.juventus.com/en/tickets/" },
+
+  { "id": "boc", "name": "Boca Juniors", "league": "lpfa", "country": "ar", "officialStore": "https://www.bocajuniors.com.ar" },
+  { "id": "rvr", "name": "River Plate",   "league": "lpfa", "country": "ar", "officialStore": "https://riverid.tuentrada.com/" },
+  { "id": "rai", "name": "Racing Club",   "league": "lpfa", "country": "ar", "officialStore": "https://www.racingclub.com.ar" }
+]
