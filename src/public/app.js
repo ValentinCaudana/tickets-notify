@@ -1,428 +1,239 @@
-// public/app.js
-const $ = (sel) => document.querySelector(sel);
+function startOfDay(d) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+function endOfDay(d) {
+  const x = new Date(d);
+  x.setHours(23, 59, 59, 999);
+  return x;
+}
 
-// Lists
-const salesList = $("#sales-list");
-
-// Filters
-const fltRegion = $("#flt-region");
-const fltSearch = $("#flt-search");
-const fltLeague = $("#flt-league");
-const fltCountry = $("#flt-country");
-const fltMembership = $("#flt-membership");
-const fltSort = $("#flt-sort");
-const fltDate = $("#flt-date");
-const btnCalendar = $("#btn-calendar");
-
-// Subscribe
-const subForm = $("#subscribe-form");
-const subEmail = $("#sub-email");
-const subClub = $("#sub-club");
-const subMsg = $("#sub-msg");
-const subBtn = $("#sub-btn");
-
-// Create sale
-const createForm = $("#create-form");
-const saleClub = $("#sale-club");
-const saleMatch = $("#sale-match");
-const saleDate = $("#sale-date");
-const saleLink = $("#sale-link");
-const saleMembership = $("#sale-membership");
-const clubsList = $("#clubs-list");
-const createMsg = $("#create-msg");
-const createBtn = $("#create-btn");
-const errClub = $("#err-club");
-const errMatch = $("#err-match");
-const errDate = $("#err-date");
-const errLink = $("#err-link");
-
-// Toast
-const toastEl = $("#toast");
-
-// Calendar modal
-const calModal = $("#calendar-modal");
-const calBody = $("#calendar-body");
-const calClose = $("#calendar-close");
-
-const API = {
-  sales: "/api/sales",
-  subscribe: "/api/subscriptions",
-  clubs: "/api/clubs",
-};
-
-const state = {
-  sales: [],
-  clubs: [],
-  clubMap: new Map(),
-  leagues: [],
-  countries: [],
-};
-
-const EUROPE = new Set([
-  "es",
-  "pt",
-  "fr",
-  "de",
-  "it",
-  "gb",
-  "uk",
-  "nl",
-  "be",
-  "dk",
-  "se",
-  "no",
-  "fi",
-  "is",
-  "ie",
-  "ch",
-  "at",
-  "pl",
-  "cz",
-  "sk",
-  "hu",
-  "ro",
-  "bg",
-  "gr",
-  "hr",
-  "si",
-  "rs",
-  "ba",
-  "mk",
-  "al",
-  "me",
-  "xk",
-  "md",
-  "ua",
-  "by",
-  "lt",
-  "lv",
-  "ee",
-  "lu",
-  "li",
-  "sm",
-  "mc",
-  "ad",
-  "va",
-  "mt",
-  "cy",
-  "tr",
-]);
-
-const todayYMD = new Date().toISOString().slice(0, 10);
-
-const fmtDate = (iso) => {
-  try {
-    const d = new Date(iso);
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(d);
-  } catch {
-    return iso;
+function getRange(range) {
+  const now = new Date();
+  if (range === "today") {
+    return { from: startOfDay(now), to: endOfDay(now) };
   }
-};
-
-function showToast(msg, kind = "ok") {
-  toastEl.textContent = msg;
-  toastEl.className = `toast ${kind}`;
-  toastEl.style.display = "block";
-  clearTimeout(showToast.__t);
-  showToast.__t = setTimeout(() => (toastEl.style.display = "none"), 2500);
+  if (range === "week") {
+    // Lunes-domingo de la semana actual (local)
+    const day = now.getDay() || 7; // 1..7
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (day - 1));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    return { from: startOfDay(monday), to: endOfDay(sunday) };
+  }
+  if (range === "month") {
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return { from: startOfDay(first), to: endOfDay(last) };
+  }
+  return null;
 }
 
-function cardHTML(sale) {
-  const club = state.clubMap.get(sale.clubId);
-  const clubName = club?.name ?? sale.clubId.toUpperCase();
-  const league = club?.league ? ` · ${club.league}` : "";
-  const country = club?.country ? ` · ${club.country}` : "";
-  return `
-    <div class="card">
-      <div class="title">${sale.match}</div>
-      <div class="muted"><b>${clubName}</b>${league}${country}</div>
-      <div class="muted">On sale: ${fmtDate(sale.onSaleAt)}</div>
-      <div style="margin:10px 0 12px 0">
-        ${
-          sale.requiresMembership
-            ? '<span class="badge badge--membership">Membership required</span>'
-            : '<span class="badge">Open sale</span>'
-        }
-      </div>
-      <a class="btn" href="${
-        sale.link
-      }" target="_blank" rel="noopener noreferrer">Official store</a>
-    </div>
-  `;
+const elCards = document.querySelector("#cards");
+const elEmpty = document.querySelector("#empty");
+const fltDate = document.querySelector("#flt-date");
+const fltRegion = document.querySelector("#flt-region");
+const fltOnlyToday = document.querySelector("#flt-only-today");
+const chipsWrap = document.querySelector(".quick-filters");
+const elLoading = document.querySelector("#loading");
+
+// Setear valor inicial (YYYY-MM-DD) y bloquear date si "Only today"
+fltDate.value = new Date().toISOString().slice(0, 10);
+fltDate.disabled = fltOnlyToday.checked;
+
+// --- Utils fecha/hora ---
+function yyyyMmDdLocal(d) {
+  // convierte Date local -> 'YYYY-MM-DD' (sin UTC shift)
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
-// --- Fetchers ---
-async function loadClubs() {
-  const res = await fetch(API.clubs);
-  if (!res.ok) throw new Error("Failed to fetch clubs");
-  const data = await res.json();
-  state.clubs = data;
-  state.clubMap = new Map(data.map((c) => [c.id, c]));
-  state.leagues = [...new Set(data.map((c) => c.league).filter(Boolean))];
-  state.countries = [...new Set(data.map((c) => c.country).filter(Boolean))];
-
-  fltLeague.innerHTML =
-    `<option value="">All leagues</option>` +
-    state.leagues.map((l) => `<option value="${l}">${l}</option>`).join("");
-
-  fltCountry.innerHTML =
-    `<option value="">All countries</option>` +
-    state.countries.map((c) => `<option value="${c}">${c}</option>`).join("");
-
-  clubsList.innerHTML = state.clubs
-    .map((c) => `<option value="${c.id}">${c.name} (${c.league})</option>`)
-    .join("");
+function formatLocal(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
 }
 
-async function loadSales() {
-  const res = await fetch(API.sales);
+// Countdown “local-aware” con colchón de 5 minutos
+function countdownText(iso) {
+  const now = Date.now();
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return "";
+
+  // colchón anti “se adelanta por UTC”
+  const PAD = 5 * 60 * 1000; // 5 min
+  const diff = t - now;
+
+  if (diff <= -PAD) return "On sale now"; // ya empezó (superado el colchón)
+  if (diff <= PAD && diff >= -PAD) return "Starting now"; // ventana de arranque
+
+  const mins = Math.ceil((diff - PAD) / 60000);
+  const days = Math.floor(mins / (60 * 24));
+  const hours = Math.floor((mins % (60 * 24)) / 60);
+  const m = Math.max(mins % 60, 0);
+
+  if (days > 0) return `Starts in ${days}d ${hours}h`;
+  if (hours > 0) return `Starts in ${hours}h ${m}m`;
+  return `Starts in ${m}m`;
+}
+
+let activeRange = "today"; // default
+
+async function fetchSales() {
+  const params = new URLSearchParams();
+
+  if (activeRange) {
+    // chips
+    const { from, to } = getRange(activeRange);
+    params.set("from", from.toISOString());
+    params.set("to", to.toISOString());
+  } else if (fltOnlyToday.checked) {
+    params.set("date", yyyyMmDdLocal(new Date()));
+  } else if (fltDate.value) {
+    params.set("date", fltDate.value);
+  }
+
+  if (fltRegion.value && fltRegion.value !== "all") {
+    params.set("region", fltRegion.value);
+  }
+
+  elLoading.hidden = false;
+  const res = await fetch(`/api/sales?${params.toString()}`);
+  elLoading.hidden = true;
+
   if (!res.ok) throw new Error("Failed to fetch sales");
-  state.sales = await res.json();
+  return res.json();
 }
 
-// --- Helpers ---
-const isoToYMD = (iso) => new Date(iso).toISOString().slice(0, 10);
-
-// --- Render + filters ---
-function applyFilters() {
-  const selectedDate = fltDate.value; // 'YYYY-MM-DD'
-  if (selectedDate) {
-    rows = rows.filter((s) => {
-      const d = new Date(s.onSaleAt); // o la fecha que quieras comparar
-      const ymd = d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
-      return ymd === selectedDate;
-    });
-  }
-  const q = fltSearch.value.trim().toLowerCase();
-  const league = fltLeague.value;
-  const country = fltCountry.value;
-  const onlyMembership = fltMembership.checked;
-  const sortMode = fltSort.value; // soon | latest
-  const ymd = fltDate.value; // si viene vacío = no filtra por fecha
-  const region = fltRegion.value; // '' | 'europe' | 'argentina'
-  if (region === "europe") {
-    rows = rows.filter((s) =>
-      EUROPE.has((state.clubMap.get(s.clubId)?.country || "").toLowerCase())
-    );
-  } else if (region === "argentina") {
-    rows = rows.filter(
-      (s) => (state.clubMap.get(s.clubId)?.country || "").toLowerCase() === "ar"
-    );
-  }
-  fltDate.value = new Date().toISOString().slice(0, 10);
-  applyFilters();
-
-  let rows = state.sales.slice();
-
-  if (q) {
-    rows = rows.filter((s) => {
-      const club = state.clubMap.get(s.clubId);
-      return (
-        s.match.toLowerCase().includes(q) ||
-        s.clubId.toLowerCase().includes(q) ||
-        (club?.name?.toLowerCase() ?? "").includes(q)
-      );
-    });
-  }
-
-  if (league)
-    rows = rows.filter((s) => state.clubMap.get(s.clubId)?.league === league);
-  if (country)
-    rows = rows.filter((s) => state.clubMap.get(s.clubId)?.country === country);
-  if (onlyMembership) rows = rows.filter((s) => s.requiresMembership);
-
-  if (ymd) rows = rows.filter((s) => isoToYMD(s.onSaleAt) === ymd);
-
-  rows.sort((a, b) => {
-    const da = +new Date(a.onSaleAt);
-    const db = +new Date(b.onSaleAt);
-    return sortMode === "latest" ? db - da : da - db;
-  });
-
-  salesList.innerHTML = rows.length
-    ? rows.map(cardHTML).join("")
-    : '<div class="muted">No matching results.</div>';
-}
-
-async function refreshAll() {
-  try {
-    await Promise.all([loadClubs(), loadSales()]);
-    // por defecto: hoy
-    fltDate.value = todayYMD;
-    applyFilters();
-  } catch (err) {
-    salesList.innerHTML = `<div class="muted">${String(err)}</div>`;
-  }
-}
-
-// --- Calendar ---
-function buildCalendar() {
-  const counts = {};
-  state.sales.forEach((s) => {
-    const ymd = isoToYMD(s.onSaleAt);
-    counts[ymd] = (counts[ymd] || 0) + 1;
-  });
-
-  const items = Object.entries(counts).sort(([a], [b]) => (a < b ? -1 : 1));
-  calBody.innerHTML =
-    items
-      .map(
-        ([ymd, count]) =>
-          `<button class="cal-row" data-ymd="${ymd}">
-            <span>${ymd}</span><span>${count} match${
-            count > 1 ? "es" : ""
-          }</span>
-          </button>`
-      )
-      .join("") ||
-    '<div class="muted" style="padding:10px">No dates yet.</div>';
-}
-
-btnCalendar.addEventListener("click", () => {
-  buildCalendar();
-  calModal.style.display = "flex";
-});
-
-calClose.addEventListener("click", () => (calModal.style.display = "none"));
-calModal.addEventListener("click", (e) => {
-  if (e.target === calModal) calModal.style.display = "none";
-});
-calBody.addEventListener("click", (e) => {
-  const btn = e.target.closest(".cal-row");
-  if (!btn) return;
-  const ymd = btn.dataset.ymd;
-  fltDate.value = ymd;
-  calModal.style.display = "none";
-  applyFilters();
-});
-
-fltRegion.addEventListener("change", applyFilters);
-
-// --- Validation helpers (create) ---
-function resetErrors() {
-  [saleClub, saleMatch, saleDate, saleLink].forEach((el) =>
-    el.classList.remove("is-invalid")
-  );
-  [errClub, errMatch, errDate, errLink].forEach((el) => (el.textContent = ""));
-}
-
-function validateCreate(payload) {
-  const errors = {};
-  if (!payload.clubId) errors.club = "Club ID is required";
-  if (!payload.match || payload.match.length < 3)
-    errors.match = "Match is too short";
-  const t = Date.parse(payload.onSaleAt || "");
-  if (!Number.isFinite(t)) errors.date = "Invalid date/time";
-  try {
-    new URL(payload.link);
-  } catch {
-    errors.link = "Invalid URL";
-  }
-  return { ok: Object.keys(errors).length === 0, errors };
-}
-function applyInlineErrors(errors) {
-  if (errors.club) {
-    saleClub.classList.add("is-invalid");
-    errClub.textContent = errors.club;
-  }
-  if (errors.match) {
-    saleMatch.classList.add("is-invalid");
-    errMatch.textContent = errors.match;
-  }
-  if (errors.date) {
-    saleDate.classList.add("is-invalid");
-    errDate.textContent = errors.date;
-  }
-  if (errors.link) {
-    saleLink.classList.add("is-invalid");
-    errLink.textContent = errors.link;
-  }
-}
-
-// --- Subscribe ---
-subForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  subMsg.textContent = "";
-  subMsg.className = "msg";
-  subBtn.disabled = true;
-  const payload = {
-    email: subEmail.value.trim(),
-    clubId: subClub.value.trim() || undefined,
-  };
-  try {
-    const res = await fetch(API.subscribe, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error || "Subscription failed");
-    }
-    subMsg.textContent = "You are subscribed! ✅";
-    subMsg.classList.add("ok");
-    showToast("Subscribed successfully", "ok");
-    subForm.reset();
-  } catch (err) {
-    subMsg.textContent = err.message;
-    subMsg.classList.add("err");
-    showToast(err.message, "err");
-  } finally {
-    subBtn.disabled = false;
-  }
-});
-
-// --- Create sale ---
-createForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  resetErrors();
-  createMsg.textContent = "";
-  createMsg.className = "msg";
-  createBtn.disabled = true;
-
-  const iso = saleDate.value ? new Date(saleDate.value).toISOString() : "";
-  const payload = {
-    clubId: saleClub.value.trim(),
-    match: saleMatch.value.trim(),
-    onSaleAt: iso,
-    requiresMembership: !!saleMembership.checked,
-    link: saleLink.value.trim(),
-  };
-  const { ok, errors } = validateCreate(payload);
-  if (!ok) {
-    applyInlineErrors(errors);
-    createMsg.textContent = "Please fix the errors above.";
-    createMsg.classList.add("err");
-    createBtn.disabled = false;
+function renderCards(sales) {
+  elCards.innerHTML = "";
+  if (!sales.length) {
+    elEmpty.hidden = false;
     return;
   }
-  try {
-    const res = await fetch(API.sales, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error || "Create sale failed");
-    }
-    createMsg.textContent = "Sale created! ✅";
-    createMsg.classList.add("ok");
-    showToast("Sale created", "ok");
-    createForm.reset();
-    await loadSales();
-    applyFilters();
-  } catch (err) {
-    createMsg.textContent = err.message;
-    createMsg.classList.add("err");
-    showToast(err.message, "err");
-  } finally {
-    createBtn.disabled = false;
+  elEmpty.hidden = true;
+
+  for (const s of sales) {
+    const card = document.createElement("article");
+    card.className = "card";
+
+    const requires = s.requiresMembership
+      ? '<span class="badge">Membership required</span>'
+      : "";
+
+    const cdown = countdownText(s.onSaleAt);
+
+    card.innerHTML = `
+      <h3>${s.match}</h3>
+      <div class="meta">${s.clubName} · ${s.league} · ${s.country}</div>
+      <div class="meta">On sale: ${formatLocal(s.onSaleAt)}${
+      cdown ? ` · ${cdown}` : ""
+    }</div>
+      ${requires}
+      <div class="actions">
+        <a class="btn primary" href="${
+          s.link
+        }" target="_blank" rel="noopener">Official store</a>
+      </div>
+    `;
+    elCards.appendChild(card);
   }
+}
+
+// Listeners
+fltDate.addEventListener("change", apply);
+fltRegion.addEventListener("change", apply);
+fltOnlyToday.addEventListener("change", () => {
+  activeRange = null; // ← apaga chips si decide usar fecha
+  fltDate.disabled = fltOnlyToday.checked;
+  if (fltOnlyToday.checked) {
+    fltDate.value = new Date().toISOString().slice(0, 10);
+  }
+  // limpiar selección visual de chips
+  chipsWrap
+    .querySelectorAll(".chip")
+    .forEach((c) => c.classList.remove("active"));
+  apply();
 });
 
-// Boot
-refreshAll();
+chipsWrap.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if (!btn) return;
+  // activar
+  chipsWrap
+    .querySelectorAll(".chip")
+    .forEach((c) => c.classList.remove("active"));
+  btn.classList.add("active");
+
+  activeRange = btn.dataset.range; // 'today' | 'week' | 'month'
+  // cuando hay chip, ignoramos el date picker
+  fltOnlyToday.checked = false;
+  fltDate.disabled = true;
+  apply();
+});
+
+// marcar “Today” activo al cargar
+chipsWrap.querySelector('[data-range="today"]')?.classList.add("active");
+
+setInterval(() => {
+  document.querySelectorAll("#cards .card .meta").forEach((meta) => {
+    if (meta.textContent.startsWith("On sale:")) {
+      const article = meta.closest(".card");
+      const iso = article?.dataset?.onSaleAt; // lo agregamos ahora
+    }
+  });
+}, 30000);
+
+// Para alimentar el setInterval anterior guardamos onSaleAt en dataset al render
+const _origRender = renderCards;
+renderCards = function (sales) {
+  elCards.innerHTML = "";
+  if (!sales.length) {
+    elEmpty.hidden = false;
+    return;
+  }
+  elEmpty.hidden = true;
+
+  for (const s of sales) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.dataset.onSaleAt = s.onSaleAt;
+
+    const requires = s.requiresMembership
+      ? '<span class="badge">Membership required</span>'
+      : "";
+
+    const cdown = countdownText(s.onSaleAt);
+
+    card.innerHTML = `
+      <h3>${s.match}</h3>
+      <div class="meta">${s.clubName} · ${s.league} · ${s.country}</div>
+      <div class="meta">On sale: ${formatLocal(s.onSaleAt)}${
+      cdown ? ` · ${cdown}` : ""
+    }</div>
+      ${requires}
+      <div class="actions">
+        <a class="btn primary" href="${
+          s.link
+        }" target="_blank" rel="noopener">Official store</a>
+      </div>
+    `;
+    elCards.appendChild(card);
+  }
+};
+
+// Primer render
+apply();
+
+async function apply() {
+  try {
+    const sales = await fetchSales();
+    renderCards(sales);
+  } catch (e) {
+    console.error(e);
+    renderCards([]);
+  }
+}
