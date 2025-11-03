@@ -2,57 +2,64 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Tickets Notify</title>
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
   <header class="container">
     <h1>🎟️ Tickets Notify</h1>
-
-    <div class="filters">
-      <div class="row">
-        <label>
-          <span>Date</span>
-          <input type="date" id="flt-date" />
-        </label>
-    
-        <label>
-          <span>Region</span>
-          <select id="flt-region">
-            <option value="all">All</option>
-            <option value="europe">Europe</option>
-            <option value="argentina">Argentina</option>
-          </select>
-        </label>
-    
-        <label class="toggle inline">
-          <input type="checkbox" id="flt-only-today" checked />
-          <span>Only today</span>
-        </label>
-      </div>
-    </div>
-    <div class="quick-filters">
-      <button class="chip" data-range="today">Today</button>
-      <button class="chip" data-range="week">This week</button>
-      <button class="chip" data-range="month">This month</button>
-    </div>
-    
-    <p id="loading" hidden>Loading matches…</p>
-
   </header>
 
   <main class="container">
-    <section>
-      <h2 class="section-title">Matches</h2>
+    <!-- Filters -->
+    <section class="filters">
+      <div class="filter-group">
+        <label for="flt-date">Date</label>
+        <input type="date" id="flt-date" />
+      </div>
+
+      <div class="filter-group">
+        <label for="flt-region">Region</label>
+        <select id="flt-region">
+          <option value="all">All</option>
+          <option value="europe">Europe</option>
+          <option value="argentina">Argentina</option>
+        </select>
+      </div>
+
+      <label class="only-today">
+        <input type="checkbox" id="flt-only-today" checked />
+        <span>Only today</span>
+      </label>
+
+      <div class="quick-filters">
+        <button class="chip" data-range="today">Today</button>
+        <button class="chip" data-range="week">This week</button>
+        <button class="chip" data-range="month">This month</button>
+      </div>
+    </section>
+
+    <!-- Matches -->
+    <section class="matches">
+      <h2>Matches</h2>
+
+      <div id="loading" class="loading" hidden>
+        <div class="spinner"></div>
+        <span>Loading…</span>
+      </div>
+
+      <p id="empty" class="empty" hidden>
+        No matches for the selected filters.
+      </p>
+
       <div id="cards" class="cards"></div>
-      <p id="empty" class="empty" hidden>No matches for the selected filters.</p>
     </section>
   </main>
 
-  <script src="/app.js" type="module"></script>
+  <script src="./app.js" type="module"></script>
 </body>
 
 </html>

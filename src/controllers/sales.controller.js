@@ -1,117 +1,142 @@
-// src/controllers/sales.controller.js
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const clubsPath = path.join(__dirname, "../data/clubs.json");
+// paths of data
 const salesPath = path.join(__dirname, "../data/sales.json");
+const clubsPath = path.join(__dirname, "../data/clubs.json");
 
-const byId = new Map(
-  JSON.parse(fs.readFileSync(clubsPath, "utf8")).map((c) => [c.id, c])
-);
-const sameHost = (a, b) => new URL(a).host === new URL(b).host;
+// Region simple: Europa (cc alfa-2) and Argentina
+const EUROPE = new Set([
+  "al",
+  "ad",
+  "at",
+  "by",
+  "be",
+  "ba",
+  "bg",
+  "hr",
+  "cy",
+  "cz",
+  "dk",
+  "ee",
+  "fi",
+  "fr",
+  "de",
+  "gr",
+  "hu",
+  "is",
+  "ie",
+  "it",
+  "lv",
+  "li",
+  "lt",
+  "lu",
+  "mt",
+  "md",
+  "mc",
+  "me",
+  "nl",
+  "mk",
+  "no",
+  "pl",
+  "pt",
+  "ro",
+  "ru",
+  "sm",
+  "rs",
+  "sk",
+  "si",
+  "es",
+  "se",
+  "ch",
+  "tr",
+  "ua",
+  "gb",
+  "xk",
+]);
+
+// Helpers
+const readJson = async (p) => JSON.parse(await fs.readFile(p, "utf8"));
+const writeJson = async (p, data) =>
+  fs.writeFile(p, JSON.stringify(data, null, 2));
+
+function ymdLocal(d) {
+  const dt = new Date(d);
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth() + 1).padStart(2, "0");
+  const day = String(dt.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
 export async function listSales(req, res) {
-  const fs = await import("fs/promises");
-  const path = await import("path");
-  const { fileURLToPath } = await import("url");
+  const { date, from, to, region } = req.query;
 
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
+  const [sales, clubs] = await Promise.all([
+    readJson(salesPath),
+    readJson(clubsPath),
+  ]);
 
-  const salesPath = path.join(__dirname, "../data/sales.json");
-  const clubsPath = path.join(__dirname, "../data/clubs.json");
+  const clubMap = new Map(clubs.map((c) => [c.id, c]));
 
-  const { date, region } = req.query;
-
-  const rawSales = JSON.parse(
-    await fs.readFile(salesPath, "utf8").catch(() => "[]")
-  );
-  const clubsArr = JSON.parse(
-    await fs.readFile(clubsPath, "utf8").catch(() => "[]")
-  );
-  const clubMap = new Map(clubsArr.map((c) => [c.id, c]));
-
-  // Enriquecer fila con datos del club (para mostrar en cards)
-  let rows = rawSales.map((s) => {
-    const club = clubMap.get(s.clubId) || {};
+  let rows = sales.map((s) => {
+    const c = clubMap.get(s.clubId) || {};
     return {
       ...s,
-      clubName: club.name || s.clubId,
-      league: club.league || "",
-      country: (club.country || "").toLowerCase(),
-      officialStore: club.officialStore || "",
-      link: s.link || club.officialStore || "#",
+      clubName: s.clubName ?? c.name ?? "",
+      league: s.league ?? c.league ?? "",
+      country: (s.country ?? c.country ?? "").toLowerCase(),
     };
   });
 
-  // Filtro por fecha (YYYY-MM-DD): onSaleAt cae ese día (UTC)
+  // Filter for date
   if (date) {
-    const from = new Date(`${date}T00:00:00Z`).getTime();
-    const to = new Date(`${date}T23:59:59Z`).getTime();
-    rows = rows.filter((s) => {
-      const t = new Date(s.onSaleAt).getTime();
-      return t >= from && t <= to;
-    });
+    rows = rows.filter((s) => ymdLocal(s.onSaleAt) === date);
+  } else {
+    // range from/to (ISO)
+    const fromMs = from ? new Date(from).getTime() : null;
+    const toMs = to ? new Date(to).getTime() : null;
+    if (fromMs != null)
+      rows = rows.filter((s) => new Date(s.onSaleAt).getTime() >= fromMs);
+    if (toMs != null)
+      rows = rows.filter((s) => new Date(s.onSaleAt).getTime() <= toMs);
   }
 
-  // Filtro por región simple
-  if (region === "europe") {
-    const EU = new Set([
-      "es",
-      "it",
-      "fr",
-      "pt",
-      "de",
-      "gb",
-      "uk",
-      "nl",
-      "be",
-      "dk",
-      "se",
-      "no",
-      "fi",
-      "pl",
-      "ie",
-      "at",
-      "ch",
-    ]);
-    rows = rows.filter((s) => EU.has(s.country));
-  } else if (region === "argentina") {
-    rows = rows.filter((s) => s.country === "ar");
+  // Filter for region (simple)
+  if (region && region !== "all") {
+    if (region === "europe") {
+      rows = rows.filter((s) => EUROPE.has((s.country || "").toLowerCase()));
+    } else if (region === "argentina") {
+      rows = rows.filter((s) => (s.country || "").toLowerCase() === "ar");
+    }
   }
+
+  rows.sort((a, b) => new Date(a.onSaleAt) - new Date(b.onSaleAt));
 
   res.json(rows);
 }
 
 export async function createSale(req, res) {
-  const { clubId, match, onSaleAt, requiresMembership, link } = req.body;
-
-  const club = byId.get(clubId);
-  if (!club) return res.status(400).json({ error: "Club not found" });
-
-  if (!sameHost(link, club.officialStore)) {
-    return res
-      .status(400)
-      .json({ error: "link must point to the official store" });
+  const body = req.body || {};
+  // simple minimun validation
+  if (!body.clubId || !body.match || !body.onSaleAt || !body.link) {
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
-  const exists = fs.existsSync(salesPath);
-  const sales = exists ? JSON.parse(fs.readFileSync(salesPath, "utf8")) : [];
-
-  const sale = {
+  const sales = await readJson(salesPath);
+  const newSale = {
     id: crypto.randomUUID(),
-    clubId,
-    match,
-    onSaleAt,
-    requiresMembership,
-    link,
+    clubId: body.clubId,
+    match: body.match,
+    onSaleAt: body.onSaleAt,
+    requiresMembership: !!body.requiresMembership,
+    link: body.link,
   };
 
-  sales.push(sale);
-  fs.writeFileSync(salesPath, JSON.stringify(sales, null, 2));
-  res.status(201).json(sale);
+  sales.push(newSale);
+  await writeJson(salesPath, sales);
+  res.status(201).json(newSale);
 }

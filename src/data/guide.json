@@ -1,0 +1,31 @@
+[
+  {
+    "id": "guide-fcbarcelona",
+    "clubId": "fcbarcelona",
+    "league": "La Liga",
+    "steps": [
+      "Check if you need a membership to access ticket sales.",
+      "Create an account on the club’s official ticket website.",
+      "Add your payment method and verify your identity if required.",
+      "At the sale time, enter the official link and select your seat or section.",
+      "Complete the purchase and save the confirmation email."
+    ],
+    "notes": "For high-demand matches (like El Clásico), the virtual queue may open 10–30 minutes earlier.",
+    "officialPages": [
+      { "label": "Official Store", "url": "https://tickets.fcbarcelona.com/" },
+      { "label": "FAQ Tickets", "url": "https://www.fcbarcelona.com/en/tickets/faq" }
+    ]
+  },
+  {
+    "id": "guide-generic-europe",
+    "league": "Europe",
+    "steps": [
+      "Create an account on the official club website.",
+      "If available, buy a membership for priority access.",
+      "On the sale date, enter the official link.",
+      "Choose your seat and complete the payment."
+    ],
+    "notes": "Avoid unauthorized resale platforms. Each club has its own access rules and ID requirements.",
+    "officialPages": []
+  }
+]

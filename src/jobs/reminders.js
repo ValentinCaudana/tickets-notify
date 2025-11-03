@@ -13,7 +13,7 @@ export function startReminderJob() {
       const sales = JSON.parse(raw)
       const soon = sales.filter(s => {
         const t = new Date(s.onSaleAt).getTime()
-        return t > now && t - now <= 60 * 60 * 1000 // en 1 hora
+        return t > now && t - now <= 60 * 60 * 1000 // in 1 hour
       })
       soon.forEach(s => {
         console.log(`[REMINDER] ${s.match} abre ventas a las ${new Date(s.onSaleAt).toLocaleString()} — ${s.link}`)
@@ -27,7 +27,7 @@ export function startReminderJob() {
 import sales from '../data/sales.json' with { type: 'json' };
 
 const ONE_MIN = 60_000;
-const AHEAD_MS = 60 * 60 * 1000; // 1 hora
+const AHEAD_MS = 60 * 60 * 1000; // 1 hour
 
 export function startReminders({ notify = console.log } = {}) {
   setInterval(() => {
