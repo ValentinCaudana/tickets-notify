@@ -1,14 +1,12 @@
 // ---------------------
-// Fetch and render guide
+// Fetch and render composed guide
 // ---------------------
 
-// Utility to get query string parameter
 function qs(k, def = null) {
   const u = new URL(location.href);
   return u.searchParams.get(k) ?? def;
 }
 
-// Utility to format date locally
 function formatLocal(iso) {
   const d = new Date(iso);
   return d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
@@ -17,6 +15,40 @@ function formatLocal(iso) {
 const root = document.getElementById("guide-root");
 const elLoading = document.getElementById("loading");
 const elError = document.getElementById("error");
+
+function renderSections(sections = []) {
+  if (!sections.length) return "";
+  return sections
+    .map(
+      (sec) => `
+      <article class="card">
+        <h3>${sec.title}</h3>
+        ${
+          Array.isArray(sec.items) && sec.items.length
+            ? `<ol class="steps">${sec.items
+                .map((x) => `<li>${x}</li>`)
+                .join("")}</ol>`
+            : `<p class="subtle">No steps available.</p>`
+        }
+      </article>
+    `
+    )
+    .join("");
+}
+
+function renderLinks(links = []) {
+  if (!links.length) return "";
+  return `
+    <div class="links" style="margin-top:10px">
+      ${links
+        .map(
+          (l) =>
+            `<a class="btn" href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`
+        )
+        .join("")}
+    </div>
+  `;
+}
 
 async function main() {
   const saleId = qs("sale");
@@ -37,10 +69,9 @@ async function main() {
 
     const { sale, club, guide } = data;
 
-    // Match / Club Card
-    const card1 = document.createElement("article");
-    card1.className = "card";
-    card1.innerHTML = `
+    const head = document.createElement("article");
+    head.className = "card";
+    head.innerHTML = `
       <h3>${sale.match}</h3>
       <div class="meta">${club.name} · ${club.league} · ${club.country}</div>
       <div class="meta">On sale: ${formatLocal(sale.onSaleAt)}</div>
@@ -61,31 +92,23 @@ async function main() {
       </div>
     `;
 
-    // Guide / Steps Card
-    const card2 = document.createElement("article");
-    card2.className = "card";
-    const steps = (guide.steps || []).map((s, i) => `<li>${s}</li>`).join("");
-    const links = (guide.officialPages || [])
-      .map(
-        (l) =>
-          `<a class="btn" href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`
-      )
-      .join("");
-
-    card2.innerHTML = `
-      <h3>Steps</h3>
-      <ol class="steps">${steps}</ol>
+    const bodyHtml = `
+      ${renderSections(guide.sections)}
       ${
         guide.notes
-          ? `<p class="subtle" style="margin-top:10px">${guide.notes}</p>`
-          : ""
+          ? `<article class="card"><h3>Notes</h3><p class="subtle">${
+              guide.notes
+            }</p>${renderLinks(guide.links)}</article>`
+          : renderLinks(guide.links)
       }
-      ${links ? `<div class="links">${links}</div>` : ""}
     `;
 
+    const body = document.createElement("div");
+    body.innerHTML = bodyHtml;
+
     root.innerHTML = "";
-    root.appendChild(card1);
-    root.appendChild(card2);
+    root.appendChild(head);
+    root.appendChild(body);
   } catch (e) {
     console.error(e);
     elLoading.hidden = true;

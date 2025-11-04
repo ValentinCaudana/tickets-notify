@@ -137,6 +137,9 @@ function renderCards(sales) {
         <a class="btn primary" href="${
           s.link
         }" target="_blank" rel="noopener">Official store</a>
+        <a class="btn" href="/guide.html?sale=${encodeURIComponent(
+          s.id
+        )}">How to buy</a>
       </div>
     `;
     elCards.appendChild(card);
