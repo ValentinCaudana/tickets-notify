@@ -1,29 +1,54 @@
 [
-  { "id": "e1", "clubId": "fcb", "match": "FCB vs Girona (LaLiga)", "onSaleAt": "2025-11-01T09:00:00Z", "requiresMembership": true, "link": "https://tickets.fcbarcelona.com/" },
-  { "id": "e2", "clubId": "rm",  "match": "Real Madrid vs Sevilla (LaLiga)", "onSaleAt": "2025-11-02T10:00:00Z", "requiresMembership": false, "link": "https://www.realmadrid.com/entradas" },
-  { "id": "e3", "clubId": "mci", "match": "Man City vs Arsenal (Premier)", "onSaleAt": "2025-11-05T10:00:00Z", "requiresMembership": false, "link": "https://www.mancity.com/tickets" },
-
-  { "id": "a1", "clubId": "rvr", "match": "River vs Boca (LPF)", "onSaleAt": "2025-11-03T12:00:00Z", "requiresMembership": true, "link": "https://riverid.tuentrada.com/" },
-  { "id": "a2", "clubId": "boc", "match": "Boca vs Racing (LPF)", "onSaleAt": "2025-11-04T12:00:00Z", "requiresMembership": true, "link": "https://www.bocajuniors.com.ar" },
   {
-    "id": "6b1c2bbc-ac40-439c-8af3-2c11a61618fc",
+    "id": "seed-2025-11-10T09:27:00.000Z",
     "clubId": "fcb",
-    "match": "FCB vs Girona (LaLiga)",
-    "league": "laliga",
-    "tournament": "",
-    "onSaleAt": "2025-11-01T09:00:00Z",
+    "match": "FC Barcelona vs Real Betis (LaLiga)",
+    "onSaleAt": "2025-11-10T09:27:00.000Z",
     "requiresMembership": true,
-    "link": "https://tickets.fcbarcelona.com/"
+    "link": "https://tickets.fcbarcelona.com",
+    "league": "laliga",
+    "tournament": null,
+    "homeClubId": "fcb",
+    "awayClubId": "betis",
+    "country": "es"
   },
   {
-    "id": "sale-euro-001",
-    "clubId": "",
-    "match": "Euro 2028 — Group A Match 1",
-    "league": "",
-    "tournament": "euro",
-    "onSaleAt": "2028-04-10T09:00:00Z",
+    "id": "seed-2025-11-10T09:28:00.000Z",
+    "clubId": "fcb",
+    "match": "FC Barcelona vs Real Betis (LaLiga)",
+    "onSaleAt": "2025-11-10T09:28:00.000Z",
+    "requiresMembership": true,
+    "link": "https://tickets.fcbarcelona.com",
+    "league": "laliga",
+    "tournament": null,
+    "homeClubId": "fcb",
+    "awayClubId": "betis",
+    "country": "es"
+  },
+  {
+    "id": "seed-2025-11-10T09:29:00.000Z",
+    "clubId": "fcb",
+    "match": "FC Barcelona vs Real Betis (LaLiga)",
+    "onSaleAt": "2025-11-10T09:29:00.000Z",
+    "requiresMembership": true,
+    "link": "https://tickets.fcbarcelona.com",
+    "league": "laliga",
+    "tournament": null,
+    "homeClubId": "fcb",
+    "awayClubId": "betis",
+    "country": "es"
+  },
+  {
+    "id": "seed-2025-11-10T12:00:00.000Z",
+    "clubId": "rm",
+    "match": "Real Madrid vs Sevilla (LaLiga)",
+    "onSaleAt": "2025-11-10T12:00:00.000Z",
     "requiresMembership": false,
-    "link": "https://www.uefa.com/euro/tickets/"
+    "link": "https://www.realmadrid.com/en/tickets",
+    "league": "laliga",
+    "tournament": null,
+    "homeClubId": "rm",
+    "awayClubId": "sev",
+    "country": "es"
   }
-
 ]

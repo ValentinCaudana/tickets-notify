@@ -7,6 +7,10 @@ import clubsRoutes from "./routes/clubs.routes.js";
 import salesRoutes from "./routes/sales.routes.js";
 import subscriptionsRoutes from "./routes/subscriptions.routes.js";
 import guidesRoutes from "./routes/guides.routes.js";
+import {
+  startFixturesSync,
+  runFixturesSyncOnce,
+} from "./jobs/sync-fixtures.job.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,9 +33,9 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 
 const PORT = process.env.PORT ?? 4000;
 
-import { startFixturesSync } from "./jobs/sync-fixtures.job.js";
-// …
 startFixturesSync();
+
+runFixturesSyncOnce().catch(console.error);
 
 app.listen(PORT, () => {
   console.log(`API listening at http://localhost:${PORT}`);

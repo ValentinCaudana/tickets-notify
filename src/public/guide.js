@@ -1,3 +1,4 @@
+// public/guide.js
 const q = new URLSearchParams(location.search);
 const sale = q.get("sale")?.trim();
 const lang = (q.get("lang") || navigator.language || "en").slice(0, 2);
@@ -37,33 +38,46 @@ async function loadGuide() {
       return;
     }
 
-    const { title, notes = [], steps = [], links = [] } = await res.json();
+    const data = await res.json();
+    const { title, notes, steps, links } = data;
 
-    // title
-    elTitle.textContent = title || "How to buy";
+    // Title
+    elTitle.textContent = title || "How to Buy";
     elTitle.hidden = false;
 
-    // notes
+    // --- Notes (normalizamos a array) ---
+    const notesArr = Array.isArray(notes)
+      ? notes
+      : notes
+      ? String(notes).split("\n").filter(Boolean)
+      : [];
     elNotesUl.innerHTML = "";
-    for (const n of notes) {
+    for (const line of notesArr) {
       const li = document.createElement("li");
-      li.textContent = n;
+      li.textContent = line;
       elNotesUl.appendChild(li);
     }
-    elNotes.hidden = notes.length === 0;
+    elNotes.hidden = notesArr.length === 0;
 
-    // steps
+    // --- Steps ---
+    const stepsArr = Array.isArray(steps)
+      ? steps
+      : steps
+      ? String(steps).split("\n").filter(Boolean)
+      : [];
     elStepsOl.innerHTML = "";
-    steps.forEach((s) => {
+    for (const s of stepsArr) {
       const li = document.createElement("li");
       li.textContent = s;
       elStepsOl.appendChild(li);
-    });
-    elSteps.hidden = steps.length === 0;
+    }
+    elSteps.hidden = stepsArr.length === 0;
 
-    // links
+    // --- Links ---
+    const linksArr = Array.isArray(links) ? links : [];
     elLinksUl.innerHTML = "";
-    links.forEach((l) => {
+    for (const l of linksArr) {
+      if (!l?.href) continue;
       const li = document.createElement("li");
       const a = document.createElement("a");
       a.href = l.href;
@@ -72,8 +86,8 @@ async function loadGuide() {
       a.textContent = l.rel || l.href;
       li.appendChild(a);
       elLinksUl.appendChild(li);
-    });
-    elLinks.hidden = links.length === 0;
+    }
+    elLinks.hidden = elLinksUl.children.length === 0;
   } catch (e) {
     elLoading.hidden = true;
     elError.hidden = false;

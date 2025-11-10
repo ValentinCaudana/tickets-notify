@@ -214,4 +214,9 @@ chipsWrap.querySelector('[data-range="today"]')?.classList.add("active");
 
 apply();
 
-setInterval(() => apply(), 60000);
+// refresh every 60s while viewing week/month
+setInterval(() => {
+  if (activeRange && (activeRange === "week" || activeRange === "month")) {
+    apply();
+  }
+}, 60000);
