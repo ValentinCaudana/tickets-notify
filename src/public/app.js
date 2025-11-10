@@ -213,3 +213,5 @@ chipsWrap.addEventListener("click", (e) => {
 chipsWrap.querySelector('[data-range="today"]')?.classList.add("active");
 
 apply();
+
+setInterval(() => apply(), 60000);

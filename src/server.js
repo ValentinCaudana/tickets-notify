@@ -28,6 +28,11 @@ app.use("/api/guides", guidesRoutes);
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 const PORT = process.env.PORT ?? 4000;
+
+import { startFixturesSync } from "./jobs/sync-fixtures.job.js";
+// …
+startFixturesSync();
+
 app.listen(PORT, () => {
   console.log(`API listening at http://localhost:${PORT}`);
 });
