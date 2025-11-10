@@ -1,0 +1,76 @@
+[
+  {
+    "key": "laliga-default",
+    "title": { "en": "LaLiga – How to buy tickets", "es": "LaLiga – Cómo comprar entradas" },
+    "applies": { "league": "laliga" },
+    "notes": {
+      "en": "Some sales require membership or pre-registration.",
+      "es": "Algunas ventas requieren membresía o preregistro."
+    },
+    "links": [
+      { "text": { "en": "LaLiga tickets – official", "es": "Entradas LaLiga – oficial" }, "href": "https://www.laliga.com" }
+    ],
+    "steps": {
+      "en": [
+        "Open the club’s official ticketing store.",
+        "Check if membership is required.",
+        "Join the queue at the announced time and follow the flow."
+      ],
+      "es": [
+        "Abrí la tienda oficial de entradas del club.",
+        "Verificá si se requiere membresía.",
+        "Entrá a la fila a la hora indicada y seguí los pasos."
+      ]
+    }
+  },
+  {
+    "key": "fcb-home-laliga",
+    "title": { "en": "FC Barcelona (home) – LaLiga", "es": "FC Barcelona (local) – LaLiga" },
+    "applies": { "league": "laliga", "homeClubId": "fcb" },
+    "notes": {
+      "en": "Home games usually sell fast. Membership improves odds.",
+      "es": "Los partidos de local se agotan rápido. La membresía mejora tus chances."
+    },
+    "links": [
+      { "text": { "en": "FC Barcelona tickets", "es": "Entradas FC Barcelona" }, "href": "https://tickets.fcbarcelona.com" }
+    ],
+    "steps": {
+      "en": [
+        "Create/login to your Barça account.",
+        "If required, ensure your membership is valid.",
+        "At on-sale time, join the queue; avoid multiple tabs.",
+        "Pick seats, pay, and download e-tickets."
+      ],
+      "es": [
+        "Creá/iniciá sesión en tu cuenta de Barça.",
+        "Si se requiere, asegurá que tu membresía esté vigente.",
+        "A la hora de venta, entrá a la fila; evitá múltiples pestañas.",
+        "Elegí asientos, pagá y descargá e-tickets."
+      ]
+    }
+  },
+  {
+    "key": "conmebol-copa-america",
+    "title": { "en": "CONMEBOL Copa América – How to buy", "es": "CONMEBOL Copa América – Cómo comprar" },
+    "applies": { "tournament": "copa_america" },
+    "notes": {
+      "en": "Follow the official tournament ticketing announcements.",
+      "es": "Seguí los anuncios oficiales de ticketing del torneo."
+    },
+    "links": [
+      { "text": { "en": "Official site", "es": "Sitio oficial" }, "href": "https://www.conmebol.com" }
+    ],
+    "steps": {
+      "en": [
+        "Create an account on the official ticketing portal when announced.",
+        "Complete verification and payment.",
+        "Download tickets; bring valid ID matching the name."
+      ],
+      "es": [
+        "Creá una cuenta en el portal oficial cuando se anuncie.",
+        "Completá verificación y pago.",
+        "Descargá entradas; llevá un DNI que coincida con el nombre."
+      ]
+    }
+  }
+]

@@ -47,24 +47,34 @@
 </head>
 
 <body>
-    <header class="container">
-        <div class="topbar">
-            <h1>🧭 How to Buy</h1>
-            <a class="btn" href="/" style="border:1px solid #223055;">← Back</a>
-        </div>
+    <header class="topbar">
+        <a href="/" class="back">← Back</a>
+        <h1>How to Buy</h1>
     </header>
 
-    <main class="container guide">
-        <section id="guide-root">
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <span>Loading guide…</span>
-            </div>
-            <p id="error" class="empty" hidden>Guide not found.</p>
+    <main class="container">
+        <div id="g-loading">Loading guide…</div>
+        <div id="g-error" hidden class="error"></div>
+
+        <h2 id="g-title" hidden></h2>
+
+        <section id="g-notes" hidden>
+            <h3>Notes</h3>
+            <ul id="g-notes-list"></ul>
+        </section>
+
+        <section id="g-steps" hidden>
+            <h3>Steps</h3>
+            <ol id="g-steps-list"></ol>
+        </section>
+
+        <section id="g-links" hidden>
+            <h3>Useful links</h3>
+            <ul id="g-links-list"></ul>
         </section>
     </main>
 
-    <script src="./guide.js" type="module"></script>
+    <script src="/guide.js" defer></script>
 </body>
 
 </html>

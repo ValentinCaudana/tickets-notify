@@ -128,20 +128,23 @@ function renderCards(sales) {
     const cdown = countdownText(s.onSaleAt);
     const cdownStr = cdown ? ` · ${cdown}` : "";
 
+    const lang = navigator.language || "en";
     card.innerHTML = `
-      <h3>${s.match}</h3>
-      <div class="meta">${s.clubName} · ${s.league} · ${s.country}</div>
-      <div class="meta">On sale: ${formatLocal(s.onSaleAt)}${cdownStr}</div>
-      ${requires}
-      <div class="actions" style="margin-top:10px">
-        <a class="btn primary" href="${
-          s.link
-        }" target="_blank" rel="noopener">Official store</a>
-        <a class="btn" href="/guide.html?sale=${encodeURIComponent(
-          s.id
-        )}">How to buy</a>
-      </div>
-    `;
+  <h3>${s.match}</h3>
+  <div class="meta">${s.clubName} · ${s.league} · ${s.country}</div>
+  <div class="meta">On sale: ${formatLocal(s.onSaleAt)}${
+      cdown ? ` · ${cdown}` : ""
+    }</div>
+  ${requires}
+  <div class="actions">
+    <a class="btn secondary" href="/guide.html?sale=${
+      s.id
+    }&lang=${encodeURIComponent(lang)}">How to buy</a>
+    <a class="btn primary" href="${
+      s.link
+    }" target="_blank" rel="noopener">Official store</a>
+  </div>
+`;
     elCards.appendChild(card);
   }
 }

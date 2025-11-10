@@ -4,5 +4,26 @@
   { "id": "e3", "clubId": "mci", "match": "Man City vs Arsenal (Premier)", "onSaleAt": "2025-11-05T10:00:00Z", "requiresMembership": false, "link": "https://www.mancity.com/tickets" },
 
   { "id": "a1", "clubId": "rvr", "match": "River vs Boca (LPF)", "onSaleAt": "2025-11-03T12:00:00Z", "requiresMembership": true, "link": "https://riverid.tuentrada.com/" },
-  { "id": "a2", "clubId": "boc", "match": "Boca vs Racing (LPF)", "onSaleAt": "2025-11-04T12:00:00Z", "requiresMembership": true, "link": "https://www.bocajuniors.com.ar" }
+  { "id": "a2", "clubId": "boc", "match": "Boca vs Racing (LPF)", "onSaleAt": "2025-11-04T12:00:00Z", "requiresMembership": true, "link": "https://www.bocajuniors.com.ar" },
+  {
+    "id": "6b1c2bbc-ac40-439c-8af3-2c11a61618fc",
+    "clubId": "fcb",
+    "match": "FCB vs Girona (LaLiga)",
+    "league": "laliga",
+    "tournament": "",
+    "onSaleAt": "2025-11-01T09:00:00Z",
+    "requiresMembership": true,
+    "link": "https://tickets.fcbarcelona.com/"
+  },
+  {
+    "id": "sale-euro-001",
+    "clubId": "",
+    "match": "Euro 2028 — Group A Match 1",
+    "league": "",
+    "tournament": "euro",
+    "onSaleAt": "2028-04-10T09:00:00Z",
+    "requiresMembership": false,
+    "link": "https://www.uefa.com/euro/tickets/"
+  }
+
 ]

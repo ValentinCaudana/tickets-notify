@@ -1,119 +1,85 @@
-// ---------------------
-// Fetch and render composed guide
-// ---------------------
+const q = new URLSearchParams(location.search);
+const sale = q.get("sale")?.trim();
+const lang = (q.get("lang") || navigator.language || "en").slice(0, 2);
 
-function qs(k, def = null) {
-  const u = new URL(location.href);
-  return u.searchParams.get(k) ?? def;
-}
+const elTitle = document.querySelector("#g-title");
+const elNotes = document.querySelector("#g-notes");
+const elNotesUl = document.querySelector("#g-notes-list");
+const elSteps = document.querySelector("#g-steps");
+const elStepsOl = document.querySelector("#g-steps-list");
+const elLinks = document.querySelector("#g-links");
+const elLinksUl = document.querySelector("#g-links-list");
+const elLoading = document.querySelector("#g-loading");
+const elError = document.querySelector("#g-error");
 
-function formatLocal(iso) {
-  const d = new Date(iso);
-  return d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
-}
+async function loadGuide() {
+  elLoading.hidden = false;
+  elError.hidden = true;
 
-const root = document.getElementById("guide-root");
-const elLoading = document.getElementById("loading");
-const elError = document.getElementById("error");
-
-function renderSections(sections = []) {
-  if (!sections.length) return "";
-  return sections
-    .map(
-      (sec) => `
-      <article class="card">
-        <h3>${sec.title}</h3>
-        ${
-          Array.isArray(sec.items) && sec.items.length
-            ? `<ol class="steps">${sec.items
-                .map((x) => `<li>${x}</li>`)
-                .join("")}</ol>`
-            : `<p class="subtle">No steps available.</p>`
-        }
-      </article>
-    `
-    )
-    .join("");
-}
-
-function renderLinks(links = []) {
-  if (!links.length) return "";
-  return `
-    <div class="links" style="margin-top:10px">
-      ${links
-        .map(
-          (l) =>
-            `<a class="btn" href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`
-        )
-        .join("")}
-    </div>
-  `;
-}
-
-async function main() {
-  const saleId = qs("sale");
-  if (!saleId) {
+  if (!sale) {
     elLoading.hidden = true;
     elError.hidden = false;
-    elError.textContent = "Missing sale ID.";
+    elError.textContent = "Missing sale parameter.";
     return;
   }
 
   try {
     const res = await fetch(
-      `/api/guides/by-sale/${encodeURIComponent(saleId)}`
+      `/api/guides?sale=${encodeURIComponent(sale)}&lang=${encodeURIComponent(
+        lang
+      )}`
     );
-    if (!res.ok) throw new Error("Guide not found");
-    const data = await res.json();
     elLoading.hidden = true;
 
-    const { sale, club, guide } = data;
+    if (!res.ok) {
+      elError.hidden = false;
+      elError.textContent = "Guide not found.";
+      return;
+    }
 
-    const head = document.createElement("article");
-    head.className = "card";
-    head.innerHTML = `
-      <h3>${sale.match}</h3>
-      <div class="meta">${club.name} · ${club.league} · ${club.country}</div>
-      <div class="meta">On sale: ${formatLocal(sale.onSaleAt)}</div>
-      ${
-        sale.requiresMembership
-          ? '<span class="badge">Membership required</span>'
-          : ""
-      }
-      <div class="actions" style="margin-top:10px">
-        <a class="btn primary" href="${
-          sale.link
-        }" target="_blank" rel="noopener">Buy (official)</a>
-        ${
-          club.officialStore
-            ? `<a class="btn" href="${club.officialStore}" target="_blank" rel="noopener">Club Store</a>`
-            : ""
-        }
-      </div>
-    `;
+    const { title, notes = [], steps = [], links = [] } = await res.json();
 
-    const bodyHtml = `
-      ${renderSections(guide.sections)}
-      ${
-        guide.notes
-          ? `<article class="card"><h3>Notes</h3><p class="subtle">${
-              guide.notes
-            }</p>${renderLinks(guide.links)}</article>`
-          : renderLinks(guide.links)
-      }
-    `;
+    // title
+    elTitle.textContent = title || "How to buy";
+    elTitle.hidden = false;
 
-    const body = document.createElement("div");
-    body.innerHTML = bodyHtml;
+    // notes
+    elNotesUl.innerHTML = "";
+    for (const n of notes) {
+      const li = document.createElement("li");
+      li.textContent = n;
+      elNotesUl.appendChild(li);
+    }
+    elNotes.hidden = notes.length === 0;
 
-    root.innerHTML = "";
-    root.appendChild(head);
-    root.appendChild(body);
+    // steps
+    elStepsOl.innerHTML = "";
+    steps.forEach((s) => {
+      const li = document.createElement("li");
+      li.textContent = s;
+      elStepsOl.appendChild(li);
+    });
+    elSteps.hidden = steps.length === 0;
+
+    // links
+    elLinksUl.innerHTML = "";
+    links.forEach((l) => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = l.href;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = l.rel || l.href;
+      li.appendChild(a);
+      elLinksUl.appendChild(li);
+    });
+    elLinks.hidden = links.length === 0;
   } catch (e) {
-    console.error(e);
     elLoading.hidden = true;
     elError.hidden = false;
+    elError.textContent = "Internal error.";
+    console.error(e);
   }
 }
 
-main();
+loadGuide();
